@@ -6,9 +6,9 @@ import argparse
 import subprocess
 import shutil
 
-from east import log
+from mdev import log
 
-__version__ = '0.0.5'
+__version__ = '0.0.3'
 
 def mkdir_p(path):  # type: (str) -> None
     try:
@@ -19,7 +19,7 @@ def mkdir_p(path):  # type: (str) -> None
 
 def get_env():  # type: () -> None
     home = str(pathlib.Path.home())
-    env_path = os.path.abspath(os.path.join(home, '.mxos-east'))
+    env_path = os.path.abspath(os.path.join(home, '.mdev'))
     if not os.path.exists(env_path):
         log.inf(f'Directory {env_path} was not found.')
         log.inf(f'Creating {env_path} ...')
@@ -48,11 +48,11 @@ def do_clean(args):
 
 def main(argv=None):
 
-    parser = argparse.ArgumentParser(prog='east',
+    parser = argparse.ArgumentParser(prog='mdev',
         description=f'The MXOS meta-tool v{__version__}.',
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-V', '--version', action='version',
-        version=f'East version: v{__version__}',
+        version=f'mdev version: v{__version__}',
         help='print the program version and exit')
     parser.add_argument('-v', '--verbose', default=0, action='count',
         help='''Display verbose output. May be given
