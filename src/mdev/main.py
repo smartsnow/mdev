@@ -8,7 +8,7 @@ import shutil
 
 from mdev import log
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 def mkdir_p(path):  # type: (str) -> None
     try:

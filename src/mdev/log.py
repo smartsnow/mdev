@@ -172,15 +172,7 @@ def use_color():
 _COLOR_UI_WARNED = False
 
 def _use_colors(warn=True):
-    if warn:
-        global _COLOR_UI_WARNED
-        if not _COLOR_UI_WARNED:
-            print(f"WARNING: invalid color.ui value: {e}.",
-                    file=sys.stderr)
-            print('         To fix: "west config color.ui <true|false>"',
-                    file=sys.stderr)
-            _COLOR_UI_WARNED = True
-    return False
+        return False
 
 def _reset_colors(file):
     # The flush=True avoids issues with unrelated output from commands (usually
