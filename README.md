@@ -1,4 +1,4 @@
-This is the MXOS meta tool, ``mdev``.
+This is the MXOS meta tool, ``mdev`` written by Snow Yang.
 
 https://www.mxchip.com
 
