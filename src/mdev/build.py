@@ -5,7 +5,7 @@ import subprocess
 import shutil
 import click
 
-from mdev.env import get_env
+from mdev.env import get_env, get_cmake, get_ninja
 from mdev import log
 
 @click.command()
@@ -45,10 +45,10 @@ def build(project: str, module: str, flash: str, clean: bool) -> None:
         log.dbg(f'Removing {build_diretory} ...')
         shutil.rmtree(build_diretory, ignore_errors=True)
 
-    command = f'cmake -B {build_diretory} -GNinja -DAPP={project} -DMODULE={module} -DFLASH={flash} -DMXOS_ENV={env_path}'
+    command = f'{get_cmake()} -B {build_diretory} -GNinja -DAPP={project} -DMODULE={module} -DFLASH={flash} -DMXOS_ENV={env_path}'
     log.dbg(command)
     subprocess.run(command, shell=True)
 
-    command = f'cmake --build {build_diretory}'
+    command = f'{get_ninja()} -C {build_diretory}'
     log.dbg(command)
     subprocess.run(command, shell=True)
