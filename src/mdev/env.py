@@ -73,16 +73,22 @@ def get_ninja():
     return ninja_exe
 
 def download(url, destination): # type: (str, str) -> None
-    print(f'Downloading {url} to {os.path.dirname(destination)} ...', flush=True)
-    with requests.get(url, stream=True) as r:
-        with open(destination, 'wb') as f:
-            r.raw.decode_content = True
-            shutil.copyfileobj(r.raw, f)
+    log.inf(f'Downloading {url} to {os.path.dirname(destination)} ...')
+    try:
+        with requests.get(url, stream=True) as r:
+            with open(destination, 'wb') as f:
+                r.raw.decode_content = True
+                shutil.copyfileobj(r.raw, f)
+    except:
+        if os.path.exists(destination):
+            os.remove(destination)
+            log.err('Error in downloading, exit.')
+            exit(1)
 
 def extract(filename, destination=None):  # type: (str, str) -> None
     if destination == None:
         destination = os.path.dirname(filename)
-    print(f'Extracting {filename} to {destination} ...', flush=True)
+    log.inf(f'Extracting {filename} to {destination} ...')
     if filename.endswith(('.tar.gz', '.tgz')):
         archive_obj = tarfile.open(filename, 'r:gz')
     elif filename.endswith(('.tar.xz')):
@@ -97,4 +103,9 @@ def extract(filename, destination=None):  # type: (str, str) -> None
         # This is a workaround for the issue that unicode destination is not handled:
         # https://bugs.python.org/issue17153
         destination = str(destination)
-    archive_obj.extractall(destination)
+    try:
+        archive_obj.extractall(destination)
+    except:
+        shutil.rmtree(destination, ignore_errors=True)
+        log.err('Error in extracting, exit.')
+        exit(1)
