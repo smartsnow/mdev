@@ -10,22 +10,41 @@ import shutil
 import requests
 import tarfile
 import zipfile
+from rich.progress import Progress, BarColumn, TimeElapsedColumn, DownloadColumn, TransferSpeedColumn
 
 from mdev import log
 
 '''
 URL example:
-https://code.aliyun.com/mxos/toolchain/raw/master/build/cmake-macos.tar.gz
-https://code.aliyun.com/mxos/toolchain/raw/master/build/ninja-mac.zip
+http://firmware.mxchip.com/mdev/cmake-mac.tar.bz2
+http://firmware.mxchip.com/mdev/ninja-mac.tar.bz2
 '''
 
-url_common_header = 'https://code.aliyun.com/mxos/toolchain/raw/master/build/'
+url_common_header = 'http://firmware.mxchip.com/mdev/'
+
+toolchains_afterfix = {
+    'darwin': '-mac.zip',
+    'linux': '-linux.zip',
+    'win32': '-win.zip',
+}
 
 user_home = str(pathlib.Path.home())
 env_root = os.path.abspath(os.path.join(user_home, '.mdev'))
 build_root = os.path.join(env_root, 'build')
-cmake_exe = os.path.join(build_root, 'CMake.app', 'Contents', 'bin', 'cmake')
-ninja_exe = os.path.join(build_root, 'ninja')
+if sys.platform == 'darwin':
+    cmake_exe = os.path.join(build_root, 'CMake.app', 'Contents', 'bin', 'cmake')
+    ninja_exe = os.path.join(build_root, 'ninja')
+elif sys.platform == 'linux':
+    cmake_exe = os.path.join(build_root, 'cmake', 'bin', 'cmake')
+    ninja_exe = os.path.join(build_root, 'ninja')
+elif sys.platform == 'win32':
+    cmake_exe = os.path.join(build_root, 'cmake', 'bin', 'cmake.exe')
+    ninja_exe = os.path.join(build_root, 'ninja.exe')
+else:
+    log.err(f'{sys.platform} is not support')
+    exit(1)
+
+
 
 def mkdir_p(path):  # type: (str) -> None
     try:
@@ -61,24 +80,31 @@ def get_env():  # type: () -> None
         log.inf(f'Creating {build_root} ...')
         os.makedirs(build_root)
     
-    check_and_download(cmake_exe, 'cmake-mac.zip', 'CMake')
-    check_and_download(ninja_exe, 'ninja-mac.zip', 'Ninja')
+    check_and_download(cmake_exe, f'cmake{toolchains_afterfix[sys.platform]}', 'CMake')
+    check_and_download(ninja_exe, f'ninja{toolchains_afterfix[sys.platform]}', 'Ninja')
 
-    return env_root
+    return env_root.replace("\\", "/")
 
 def get_cmake():
-    return cmake_exe
+    return cmake_exe.replace("\\", "/")
 
 def get_ninja():
-    return ninja_exe
+    return ninja_exe.replace("\\", "/")
 
 def download(url, destination): # type: (str, str) -> None
     log.inf(f'Downloading {url} to {os.path.dirname(destination)} ...')
     try:
-        with requests.get(url, stream=True) as r:
-            with open(destination, 'wb') as f:
-                r.raw.decode_content = True
-                shutil.copyfileobj(r.raw, f)
+        with requests.get(url, stream=True) as response:
+            block_size = 1024 #1 Kibibyte
+            with open(destination, 'wb') as file:
+                with Progress(BarColumn(bar_width=None), 
+                TimeElapsedColumn(), 
+                DownloadColumn(), 
+                TransferSpeedColumn()) as progress:
+                    task = progress.add_task("", total=int(response.headers.get('content-length', 0)))
+                    for data in response.iter_content(block_size):
+                        progress.update(task, advance=block_size)
+                        file.write(data)
     except:
         if os.path.exists(destination):
             os.remove(destination)

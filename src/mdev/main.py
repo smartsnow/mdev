@@ -9,6 +9,7 @@ import click
 
 from mdev.build import build
 from mdev.project_management import new, import_, deploy, sync
+from mdev import log
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -41,7 +42,7 @@ def print_version(context: click.Context, param: Union[click.Option, click.Param
 )
 def cli(verbose: int) -> None:
     """The MXOS meta-tool."""
-    pass
+    log.set_verbosity(verbose)
 
 cli.add_command(new, "new")
 cli.add_command(import_, "import")

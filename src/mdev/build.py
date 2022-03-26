@@ -4,9 +4,22 @@
 import subprocess
 import shutil
 import click
+from pathlib import Path
 
 from mdev.env import get_env, get_cmake, get_ninja
 from mdev import log
+
+from rich import print
+from rich.panel import Panel
+
+mxos_logo = '''
+███╗   ███╗██╗  ██╗ ██████╗ ███████╗
+████╗ ████║╚██╗██╔╝██╔═══██╗██╔════╝
+██╔████╔██║ ╚███╔╝ ██║   ██║███████╗
+██║╚██╔╝██║ ██╔██╗ ██║   ██║╚════██║
+██║ ╚═╝ ██║██╔╝ ██╗╚██████╔╝███████║
+╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
+'''
 
 @click.command()
 @click.argument("project", type=click.Path())
@@ -39,16 +52,23 @@ def build(project: str, module: str, flash: str, clean: bool) -> None:
     """
 
     env_path = get_env()
+    project = str(Path(project)).replace('\\', '/')
     build_diretory = f'build/{project}-{module}'
+
+    print(Panel.fit(f"[cyan]{mxos_logo}", title="Thanks for using MXOS!", style='cyan'))
 
     if clean:
         log.dbg(f'Removing {build_diretory} ...')
         shutil.rmtree(build_diretory, ignore_errors=True)
 
-    command = f'{get_cmake()} -B {build_diretory} -GNinja -DAPP={project} -DMODULE={module} -DFLASH={flash} -DMXOS_ENV={env_path}'
+    print(Panel(f"[magenta]Configuring ...", style='magenta'))
+    command = f'{get_cmake()} -B {build_diretory} -GNinja -DAPP={project} -DMODULE={module} -DFLASH={flash} -DMXOS_ENV={env_path} -DCMAKE_MAKE_PROGRAM={get_ninja()}'
     log.dbg(command)
-    subprocess.run(command, shell=True)
+    ret = subprocess.run(command, shell=True)
+    if ret.returncode != 0:
+        exit(ret.returncode)
 
-    command = f'{get_ninja()} -C {build_diretory}'
+    print(Panel(f"[green]Building ...", style='green'))
+    command = f'{get_cmake()} --build {build_diretory}'
     log.dbg(command)
     subprocess.run(command, shell=True)
