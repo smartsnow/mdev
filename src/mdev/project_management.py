@@ -2,9 +2,19 @@
 # Date  : 2022/03/21
 
 import os
-from typing import Union, Any
+from typing import List, Any
+
+import pathlib
 
 import click
+import tabulate
+
+from rich.console import Console
+from rich.table import Table
+from rich import box
+
+from mdev.project import initialise_project, import_project, get_known_libs, deploy_project
+from mdev.project._internal import git_utils
 
 @click.command()
 @click.option(
@@ -26,10 +36,11 @@ def new(path: str, create_only: bool) -> None:
 
         $ mdev new helloworld
     """
-    # click.echo(f"Creating a new MXOS program at path '{path}'.")
-    # if not create_only:
-    #     click.echo("Downloading mxos and adding it to the project.")
-    click.echo("TBD.")
+    click.echo(f"Creating a new MXOS program at path '{path}'.")
+    if not create_only:
+        click.echo("Downloading mxos and adding it to the project.")
+
+    initialise_project(pathlib.Path(path), create_only)
     
 @click.command()
 @click.argument("url")
@@ -54,7 +65,18 @@ def import_(url: str, path: Any, skip_resolve_libs: bool) -> None:
 
         $ mdev import helloworld
     """
-    click.echo("TBD.")
+    click.echo(f"Cloning MXOS program '{url}'")
+    if not skip_resolve_libs:
+        click.echo("Resolving program component dependencies.")
+
+    if path:
+        click.echo(f"Destination path is '{path}'")
+        path = pathlib.Path(path)
+
+    dst_path = import_project(url, path, not skip_resolve_libs)
+    if not skip_resolve_libs:
+        libs = get_known_libs(dst_path)
+        _print_dependency_table(libs)
 
 @click.command()
 @click.argument("path", type=click.Path(), default=os.getcwd())
@@ -79,8 +101,11 @@ def deploy(path: str, force: bool) -> None:
 
         $ mxos deploy
     """
-    # click.echo("Checking out all libraries to revisions specified in .component files. Resolving any unresolved libraries.")
-    click.echo("TBD.")
+    click.echo("Checking out all componets to revisions specified in .component files. Resolving any unresolved componets.")
+    root_path = pathlib.Path(path)
+    deploy_project(root_path, force)
+    libs = get_known_libs(root_path)
+    _print_dependency_table(libs)
 
 @click.command()
 @click.argument("path", type=click.Path(), default=os.getcwd())
@@ -100,3 +125,26 @@ def sync(path: str, force: bool) -> None:
         $ mxos sync
     """
     click.echo("TBD.")
+
+def _print_dependency_table(libs: List) -> None:
+    click.echo("The following library dependencies were fetched: \n")
+
+    table = Table(title="Components", box = box.ROUNDED, style='blue')
+
+    table.add_column("Library", style="cyan")
+    table.add_column("URL", style="magenta")
+    table.add_column("Path", style="green")
+    table.add_column("Commit", style="blue")
+
+    for lib in libs:
+        table.add_row(
+            lib.reference_file.stem,
+            lib.get_git_reference().repo_url,
+            os.path.relpath(lib.source_code_path),
+            git_utils.get_default_branch(git_utils.get_repo(lib.source_code_path))
+            if not lib.get_git_reference().ref
+            else lib.get_git_reference().ref[:6],
+        )
+
+    console = Console()
+    console.print(table, justify="left")

@@ -21,6 +21,24 @@ mxos_logo = '''
 ╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
 '''
 
+failed = '''
+███████╗ █████╗ ██╗██╗     ███████╗██████╗ 
+██╔════╝██╔══██╗██║██║     ██╔════╝██╔══██╗
+█████╗  ███████║██║██║     █████╗  ██║  ██║
+██╔══╝  ██╔══██║██║██║     ██╔══╝  ██║  ██║
+██║     ██║  ██║██║███████╗███████╗██████╔╝
+╚═╝     ╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚═════╝ 
+'''
+
+success = '''
+███████╗██╗   ██╗ ██████╗ ██████╗███████╗███████╗███████╗
+██╔════╝██║   ██║██╔════╝██╔════╝██╔════╝██╔════╝██╔════╝
+███████╗██║   ██║██║     ██║     █████╗  ███████╗███████╗
+╚════██║██║   ██║██║     ██║     ██╔══╝  ╚════██║╚════██║
+███████║╚██████╔╝╚██████╗╚██████╗███████╗███████║███████║
+╚══════╝ ╚═════╝  ╚═════╝ ╚═════╝╚══════╝╚══════╝╚══════╝
+'''
+
 @click.command()
 @click.argument("project", type=click.Path())
 @click.argument("module")
@@ -71,4 +89,9 @@ def build(project: str, module: str, flash: str, clean: bool) -> None:
     print(Panel(f"[green]Building ...", style='green'))
     command = f'{get_cmake()} --build {build_diretory}'
     log.dbg(command)
-    subprocess.run(command, shell=True)
+    ret = subprocess.run(command, shell=True)
+    if ret.returncode != 0:
+        print(Panel.fit(f"[red]{failed}", title="Sorry ...", style='red'))
+        exit(ret.returncode)
+    print(Panel.fit(f"[green]{success}", title="Congratulation!", style='green'))
+    
