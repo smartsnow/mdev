@@ -16,7 +16,7 @@ from mdev.project._internal import git_utils
 logger = logging.getLogger(__name__)
 
 
-def import_project(url: str, dst_path: Any = None, recursive: bool = False) -> pathlib.Path:
+def import_project(url: str, dst_path: Any = None, ref: str = '', recursive: bool = False) -> pathlib.Path:
     """Clones an Mxos project from a remote repository.
 
     Args:
@@ -32,7 +32,15 @@ def import_project(url: str, dst_path: Any = None, recursive: bool = False) -> p
     if not dst_path:
         dst_path = pathlib.Path(git_data["dst_path"])
 
-    git_utils.clone(url, dst_path)
+    if dst_path.exists():
+        click.echo(f"❌ Error: {str(dst_path)} already exists, please change a name or remove it from there.")
+        exit(1)
+
+    repo = git_utils.clone(url, dst_path)
+    if ref:
+        git_utils.fetch(repo, ref)
+        git_utils.checkout(repo, "FETCH_HEAD")
+
     if recursive:
         libs = LibraryReferences(root=dst_path, ignore_paths=[])
         libs.fetch()

@@ -47,13 +47,19 @@ def new(path: str, create_only: bool) -> None:
 @click.argument("url")
 @click.argument("path", type=click.Path(), default="")
 @click.option(
+    "--checkout",
+    "-c",
+    show_default=True,
+    help="Checkout to the specified branch or commit after cloning project.",
+)
+@click.option(
     "--skip-resolve-libs",
     "-s",
     is_flag=True,
     show_default=True,
     help="Skip resolving program component dependencies after cloning.",
 )
-def import_(url: str, path: Any, skip_resolve_libs: bool) -> None:
+def import_(url: str, path: Any, checkout: str, skip_resolve_libs: bool) -> None:
     """Clone an MXOS project and component dependencies.
 
     Arguments:
@@ -75,7 +81,7 @@ def import_(url: str, path: Any, skip_resolve_libs: bool) -> None:
         click.echo(f"Destination path is '{path}'")
         path = pathlib.Path(path)
 
-    dst_path = import_project(url, path, not skip_resolve_libs)
+    dst_path = import_project(url, path, checkout, not skip_resolve_libs)
     if not skip_resolve_libs:
         libs = get_known_libs(dst_path)
         _print_dependency_table(libs, dst_path)
