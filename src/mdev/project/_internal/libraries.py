@@ -125,7 +125,7 @@ def _clone_at_ref(url: str, path: Path, ref: str) -> None:
             # We couldn't clone the ref and had to fall back to cloning
             # just the default branch. Fetch the ref before checkout, so
             # that we have it available locally.
-            logger.warning(f"Fetching {path.relative_to(Path.cwd())} ...")
+            logger.warning(f"Fetching {path} ...")
             repo = git_utils.clone(url, path)
             git_utils.fetch(repo, ref)
             git_utils.checkout(repo, "FETCH_HEAD")

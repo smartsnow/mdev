@@ -50,9 +50,9 @@ class ProgressReporter(RemoteProgress):
             message: Message string describing the number of bytes transferred in the WRITING operation.
         """
         if self.BEGIN & op_code:
-            self.bar = ProgressBar(total=max_count, file=sys.stderr, leave=False)
+            self.bar = ProgressBar(total=max_count, leave=False, bar_format='{bar} [{percentage:3.0f}%] {desc}')
 
-        self.bar.desc = f"{self.name}"
+        self.bar.desc = f"{message}"
         self.bar.update_progress(block_num=cur_count, total_size=max_count)
 
         if self.END & op_code:
