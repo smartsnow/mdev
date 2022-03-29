@@ -67,7 +67,8 @@ def import_(url: str, path: Any, skip_resolve_libs: bool) -> None:
     """
     click.echo(f"Cloning MXOS program '{url}'")
     if not skip_resolve_libs:
-        click.echo("Resolving program component dependencies.")
+        click.echo("Resolving program component dependencies ...")
+        click.echo("This may take a long time, please be patient 😊, you can go have a tea 🍵")
 
     if path:
         click.echo(f"Destination path is '{path}'")
