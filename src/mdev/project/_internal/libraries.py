@@ -63,6 +63,7 @@ class LibraryReferences:
             git_ref = lib.get_git_reference()
             logger.info(f"Resolving library reference {git_ref.repo_url}.")
             _clone_at_ref(git_ref.repo_url, lib.source_code_path, git_ref.ref)
+            self._ignore_component(lib.source_code_path)
 
         # Check if we find any new references after cloning dependencies.
         if list(self.iter_unresolved()):
@@ -113,6 +114,18 @@ class LibraryReferences:
     def _in_ignore_path(self, lib_reference_path: Path) -> bool:
         """Check if a library reference is in a path we want to ignore."""
         return any(p in lib_reference_path.parts for p in self.ignore_paths)
+
+    def _ignore_component(self, path: Path) -> Path:
+        for parent in path.parents:
+            if parent == self.root:
+                break
+            git_exclude = parent / '.git' / 'info' / 'exclude'
+            if git_exclude.exists():
+                content = git_exclude.read_text()
+                relpath = str(path.relative_to(str(parent)))
+                if relpath not in content.splitlines():
+                    git_exclude.write_text(f'{content}{relpath}\n')
+                break
 
 
 def _clone_at_ref(url: str, path: Path, ref: str) -> None:

@@ -39,6 +39,7 @@ def new(path: str, create_only: bool) -> None:
     click.echo(f"Creating a new MXOS program at path '{path}'.")
     if not create_only:
         click.echo("Downloading mxos and adding it to the project.")
+        click.echo("This may take a long time, please be patient 😊, you can have a cup fo tea 🍵")
 
     initialise_project(pathlib.Path(path), create_only)
     
@@ -68,7 +69,7 @@ def import_(url: str, path: Any, skip_resolve_libs: bool) -> None:
     click.echo(f"Cloning MXOS program '{url}'")
     if not skip_resolve_libs:
         click.echo("Resolving program component dependencies ...")
-        click.echo("This may take a long time, please be patient 😊, you can go have a tea 🍵")
+        click.echo("This may take a long time, please be patient 😊, you can have a cup fo tea 🍵")
 
     if path:
         click.echo(f"Destination path is '{path}'")
@@ -103,6 +104,7 @@ def deploy(path: str, force: bool) -> None:
         $ mxos deploy
     """
     click.echo("Checking out all componets to revisions specified in .component files. Resolving any unresolved componets.")
+    click.echo("This may take a long time, please be patient 😊, you can have a cup fo tea 🍵")
     root_path = pathlib.Path(path)
     deploy_project(root_path, force)
     libs = get_known_libs(root_path)
