@@ -117,12 +117,12 @@ class LibraryReferences:
 
     def _ignore_component(self, path: Path) -> Path:
         for parent in path.parents:
-            if parent == self.root:
+            if parent == self.root.parents[0]:
                 break
             git_exclude = parent / '.git' / 'info' / 'exclude'
             if git_exclude.exists():
                 content = git_exclude.read_text()
-                relpath = str(path.relative_to(str(parent)))
+                relpath = str(path.relative_to(str(parent))).replace('\\', '/')
                 if relpath not in content.splitlines():
                     git_exclude.write_text(f'{content}{relpath}\n')
                 break

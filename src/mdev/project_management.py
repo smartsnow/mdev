@@ -78,7 +78,7 @@ def import_(url: str, path: Any, skip_resolve_libs: bool) -> None:
     dst_path = import_project(url, path, not skip_resolve_libs)
     if not skip_resolve_libs:
         libs = get_known_libs(dst_path)
-        _print_dependency_table(libs)
+        _print_dependency_table(libs, dst_path)
 
 @click.command()
 @click.argument("path", type=click.Path(), default=os.getcwd())
@@ -108,7 +108,7 @@ def deploy(path: str, force: bool) -> None:
     root_path = pathlib.Path(path)
     deploy_project(root_path, force)
     libs = get_known_libs(root_path)
-    _print_dependency_table(libs)
+    _print_dependency_table(libs, root_path)
 
 @click.command()
 @click.argument("path", type=click.Path(), default=os.getcwd())
@@ -131,9 +131,9 @@ def sync(path: str) -> None:
     root_path = pathlib.Path(path)
     sync_project(root_path)
     libs = get_known_libs(root_path)
-    _print_dependency_table(libs)
+    _print_dependency_table(libs, root_path)
 
-def _print_dependency_table(libs: List) -> None:
+def _print_dependency_table(libs: List, root: pathlib.Path) -> None:
     table = Table(title="Components List", box = box.ROUNDED, style='blue')
 
     table.add_column("Library", style="cyan")
@@ -145,7 +145,7 @@ def _print_dependency_table(libs: List) -> None:
         table.add_row(
             lib.reference_file.stem,
             lib.get_git_reference().repo_url,
-            os.path.relpath(lib.source_code_path),
+            str(lib.source_code_path.relative_to(str(root))).replace('\\', '/'),
             git_utils.get_default_branch(git_utils.get_repo(lib.source_code_path))
             if not lib.get_git_reference().ref
             else lib.get_git_reference().ref[:6],
