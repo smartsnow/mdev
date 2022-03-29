@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.table import Table
 from rich import box
 
-from mdev.project import initialise_project, import_project, get_known_libs, deploy_project
+from mdev.project import initialise_project, import_project, get_known_libs, deploy_project, sync_project
 from mdev.project._internal import git_utils
 
 @click.command()
@@ -110,7 +110,7 @@ def deploy(path: str, force: bool) -> None:
 
 @click.command()
 @click.argument("path", type=click.Path(), default=os.getcwd())
-def sync(path: str, force: bool) -> None:
+def sync(path: str) -> None:
     """Synchronize component references
 
     Synchronizes all component and dependency references (.component files) in the current program or component.
@@ -125,12 +125,14 @@ def sync(path: str, force: bool) -> None:
 
         $ mxos sync
     """
-    click.echo("TBD.")
+    click.echo("Synchronizing all .component files to revision of it's componet.")
+    root_path = pathlib.Path(path)
+    sync_project(root_path)
+    libs = get_known_libs(root_path)
+    _print_dependency_table(libs)
 
 def _print_dependency_table(libs: List) -> None:
-    click.echo("The following library dependencies were fetched: \n")
-
-    table = Table(title="Components", box = box.ROUNDED, style='blue')
+    table = Table(title="Components List", box = box.ROUNDED, style='blue')
 
     table.add_column("Library", style="cyan")
     table.add_column("URL", style="magenta")

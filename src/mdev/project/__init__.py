@@ -8,5 +8,5 @@
 * Deploy of a specific version of Mxos OS or library.
 """
 
-from mdev.project.project import initialise_project, import_project, deploy_project, get_known_libs
+from mdev.project.project import initialise_project, import_project, deploy_project, sync_project, get_known_libs
 from mdev.project.mxos_program import MxosProgram

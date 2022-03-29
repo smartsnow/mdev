@@ -5,6 +5,8 @@
 import pathlib
 import logging
 
+import click
+
 from typing import List, Any
 
 from mdev.project.mxos_program import MxosProgram, parse_url
@@ -68,6 +70,25 @@ def deploy_project(path: pathlib.Path, force: bool = False) -> None:
         logger.info("Unresolved libraries detected, downloading library source code.")
         libs.fetch()
 
+def sync_project(path: pathlib.Path) -> None:
+    """Sync a specific revision of the current Mxos project.
+
+    This function also resolves and syncs all library dependencies to the revision specified in the library reference
+    files.
+
+    Args:
+        path: Path to the Mxos project.
+    """
+    libs = LibraryReferences(path, ignore_paths=[])
+    for lib in libs.iter_resolved():
+        repo = git_utils.get_repo(lib.source_code_path)
+        git_ref = lib.get_git_reference()
+
+        current_ref = repo.head.object.hexsha
+        if git_ref.ref != current_ref:
+            click.echo(f'Sync {lib.reference_file.name} from {git_ref.ref} to {current_ref}')
+            git_ref.ref = current_ref
+            lib.reference_file.write_text(f'{git_ref.repo_url}/#{git_ref.ref}\n')
 
 def get_known_libs(path: pathlib.Path) -> List:
     """List all resolved library dependencies.
