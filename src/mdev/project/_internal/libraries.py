@@ -80,6 +80,11 @@ class LibraryReferences:
 
             git_utils.fetch(repo, git_ref.ref)
             git_utils.checkout(repo, "FETCH_HEAD", force=force)
+        
+            if lib.reference_file.name == 'mxos.component':
+                for submodule in repo.submodules:
+                    if submodule.module_exists():
+                        submodule.update(init=True)
 
     def iter_all(self) -> Generator[MxosLibReference, None, None]:
         """Iterate all library references in the tree.

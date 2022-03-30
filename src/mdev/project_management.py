@@ -7,7 +7,6 @@ from typing import List, Any
 import pathlib
 
 import click
-import tabulate
 
 from rich.console import Console
 from rich.table import Table
@@ -143,14 +142,12 @@ def _print_dependency_table(libs: List, root: pathlib.Path) -> None:
     table = Table(title="Components List", box = box.ROUNDED, style='blue')
 
     table.add_column("Library", style="cyan")
-    table.add_column("URL", style="magenta")
     table.add_column("Path", style="green")
     table.add_column("Commit", style="blue")
 
     for lib in libs:
         table.add_row(
             lib.reference_file.stem,
-            lib.get_git_reference().repo_url,
             str(lib.source_code_path.relative_to(str(root))).replace('\\', '/'),
             git_utils.get_default_branch(git_utils.get_repo(lib.source_code_path))
             if not lib.get_git_reference().ref
