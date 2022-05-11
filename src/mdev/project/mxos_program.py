@@ -118,7 +118,10 @@ def parse_url(name_or_url: str) -> Dict[str, str]:
     else:
         url = f"https://code.aliyun.com/mxos/{url_obj.path}.git"
     # We need to create a valid directory name from the url path section.
-    return {"url": url, "dst_path": url_obj.path.rsplit("/", maxsplit=1)[-1].replace("/", "")}
+    dist_path = url_obj.path.rsplit("/", maxsplit=1)[-1].replace("/", "")
+    if dist_path.endswith('.git'):
+        dist_path = dist_path[:-len('.git')]
+    return {"url": url, "dst_path": dist_path}
 
 
 def _tree_contains_program(path: Path) -> bool:
