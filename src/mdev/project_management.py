@@ -106,7 +106,7 @@ def deploy(path: str, force: bool) -> None:
 
     Example:
 
-        $ mxos deploy
+        $ mdev deploy
     """
     click.echo("Checking out all componets to revisions specified in .component files. Resolving any unresolved componets.")
     click.echo("This may take a long time, please be patient, you can have a cup fo tea")
@@ -130,13 +130,62 @@ def sync(path: str) -> None:
 
     Example:
 
-        $ mxos sync
+        $ mdev sync
     """
     click.echo("Synchronizing all .component files to revision of it's componet.")
     root_path = pathlib.Path(path)
     sync_project(root_path)
     libs = get_known_libs(root_path)
     _print_dependency_table(libs, root_path)
+
+@click.command()
+@click.argument("path", type=click.Path(), default=os.getcwd())
+def status(path: str) -> None:
+    """Show component status
+
+    Show all component status in the current program or component.
+
+    Arguments:
+    
+        PATH: Path to the MXOS project [default: CWD]
+
+    Example:
+
+        $ mdev status
+
+    Status descripe:
+
+        unsync: The component's revisions isn't match to the .component file, you may run 'mdev sync' or 'mdev deploy'.
+        dirty: The component's repository is dirty (uncommited files).
+    """
+    click.echo("Show status of all components")
+    root_path = pathlib.Path(path)
+    libs = get_known_libs(root_path)
+    table = Table(title="Components List", box = box.ROUNDED, style='blue')
+
+    table.add_column("Library", style="cyan")
+    table.add_column("Path", style="green")
+    table.add_column("Commit", style="blue")
+
+    for lib in libs:
+        repo = git_utils.get_repo(lib.source_code_path)
+        git_ref = lib.get_git_reference()
+        short_ref = git_utils.get_default_branch(repo) if not git_ref.ref else git_ref.ref[:6]
+        status = []
+        if git_ref.ref != repo.head.object.hexsha:
+            status.append('unsync')
+        if repo.is_dirty():
+            status.append('dirty')
+        if status:
+            short_ref += f'({",".join(status)})'
+        table.add_row(
+            lib.reference_file.stem,
+            str(lib.source_code_path.relative_to(str(root_path))).replace('\\', '/'),
+            short_ref,
+        )
+
+    console = Console()
+    console.print(table, justify="left")
 
 def _print_dependency_table(libs: List, root: pathlib.Path) -> None:
     table = Table(title="Components List", box = box.ROUNDED, style='blue')

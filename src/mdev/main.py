@@ -8,7 +8,7 @@ from typing import Union, Any
 import click
 
 from mdev.build import build
-from mdev.project_management import new, import_, deploy, sync
+from mdev.project_management import new, import_, deploy, sync, status
 from mdev import log
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -49,4 +49,5 @@ cli.add_command(import_, "import")
 cli.add_command(deploy, "deploy")
 cli.add_command(sync, "sync")
 cli.add_command(build, "build")
+cli.add_command(status, "status")
 cli()
