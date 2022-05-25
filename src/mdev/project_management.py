@@ -156,6 +156,7 @@ def status(path: str) -> None:
     Status descripe:
 
         unsync: The component's revisions isn't match to the .component file, you may run 'mdev sync' or 'mdev deploy'.
+        
         dirty: The component's repository is dirty (uncommited files).
     """
     click.echo("Show status of all components")

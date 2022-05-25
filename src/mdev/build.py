@@ -54,7 +54,13 @@ success = '''
     is_flag=True,
     help="Rebuild the project.",
 )
-def build(project: str, module: str, flash: str, clean: bool) -> None:
+@click.option(
+    "--kconfig",
+    "-k",
+    is_flag=True,
+    help="Open config menu",
+)
+def build(project: str, module: str, flash: str, clean: bool, kconfig: str) -> None:
     """
     Build a MXOS project.
 
@@ -88,6 +94,8 @@ def build(project: str, module: str, flash: str, clean: bool) -> None:
 
     print(Panel(f"[green]Building ...", style='green'))
     command = f'{get_cmake()} --build {build_diretory}'
+    if kconfig:
+        command += f' --target guiconfig'
     log.dbg(command)
     ret = subprocess.run(command, shell=True)
     if ret.returncode != 0:
